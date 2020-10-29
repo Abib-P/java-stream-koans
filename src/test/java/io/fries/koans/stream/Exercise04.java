@@ -2,6 +2,7 @@ package io.fries.koans.stream;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -18,7 +19,7 @@ class Exercise04 extends OnlineStore {
     void first_registrant() {
         List<Customer> customerList = mall.getCustomers();
 
-        Optional<Customer> firstCustomer = null;
+        Optional<Customer> firstCustomer = customerList.stream().findFirst();
 
         assertThat(firstCustomer.get()).isEqualTo(customerList.get(0));
     }
@@ -30,7 +31,7 @@ class Exercise04 extends OnlineStore {
     void is_there_anyone_older_than_40() {
         List<Customer> customerList = mall.getCustomers();
 
-        boolean olderThan40Exists = true;
+        boolean olderThan40Exists = customerList.stream().anyMatch( customer -> customer.getAge() > 40);
 
         assertThat(olderThan40Exists).isFalse();
     }
@@ -42,7 +43,7 @@ class Exercise04 extends OnlineStore {
     void is_everybody_older_than_20() {
         List<Customer> customerList = mall.getCustomers();
 
-        boolean allOlderThan20 = false;
+        boolean allOlderThan20 = customerList.stream().allMatch(customer -> customer.getAge() > 20);
 
         assertThat(allOlderThan20).isTrue();
     }
@@ -55,7 +56,7 @@ class Exercise04 extends OnlineStore {
     void everyone_wants_something() {
         List<Customer> customerList = mall.getCustomers();
 
-        boolean everyoneWantsSomething = false;
+        boolean everyoneWantsSomething = customerList.stream().noneMatch(customer -> customer.getWantsToBuy().isEmpty());
 
         assertThat(everyoneWantsSomething).isTrue();
     }
