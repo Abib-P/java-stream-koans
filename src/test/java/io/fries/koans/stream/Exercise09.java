@@ -23,10 +23,17 @@ class Exercise09 extends OnlineStore {
     void simplest_string_join() {
         List<Customer> customerList = mall.getCustomers();
 
-        Supplier<Object> supplier = null;
-        BiConsumer<Object, String> accumulator = null;
-        BinaryOperator<Object> combiner = null;
-        Function<Object, String> finisher = null;
+        Supplier<StringBuilder> supplier = StringBuilder::new;
+        BiConsumer<StringBuilder, String> accumulator = (result,newName) -> {if (result.length()==0) {
+                                                                                result.append(newName);
+                                                                            }else{ result.append(","+newName); }};
+        BinaryOperator<StringBuilder> combiner = StringBuilder::append;
+        Function<StringBuilder, String> finisher = StringBuilder::toString;
+
+        /*Supplier<StringBuilder> supplier = null;
+        BiConsumer<StringBuilder, String> accumulator = null ;
+        BinaryOperator<StringBuilder> combiner = null;
+        Function<StringBuilder, String> finisher = null;*/
 
         Collector<String, ?, String> toCsv = new SimpleCollector<>(
                 supplier,
