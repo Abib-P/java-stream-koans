@@ -2,12 +2,12 @@ package io.fries.koans.stream;
 
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Array;
 import java.util.*;
-import java.util.function.BiConsumer;
-import java.util.function.BinaryOperator;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.*;
 import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collector.Characteristics.CONCURRENT;
 import static java.util.stream.Collector.Characteristics.IDENTITY_FINISH;
@@ -24,16 +24,9 @@ class Exercise09 extends OnlineStore {
         List<Customer> customerList = mall.getCustomers();
 
         Supplier<StringBuilder> supplier = StringBuilder::new;
-        BiConsumer<StringBuilder, String> accumulator = (result,newName) -> {if (result.length()==0) {
-                                                                                result.append(newName);
-                                                                            }else{ result.append(","+newName); }};
+        BiConsumer<StringBuilder, String> accumulator = (result,newName) -> result.append( result.length() > 0 ? ","+newName :newName );
         BinaryOperator<StringBuilder> combiner = StringBuilder::append;
         Function<StringBuilder, String> finisher = StringBuilder::toString;
-
-        /*Supplier<StringBuilder> supplier = null;
-        BiConsumer<StringBuilder, String> accumulator = null ;
-        BinaryOperator<StringBuilder> combiner = null;
-        Function<StringBuilder, String> finisher = null;*/
 
         Collector<String, ?, String> toCsv = new SimpleCollector<>(
                 supplier,
@@ -44,6 +37,29 @@ class Exercise09 extends OnlineStore {
         );
         String nameAsCsv = customerList.stream().map(Customer::getName).collect(toCsv);
         assertThat(nameAsCsv).isEqualTo("Joe,Steven,Patrick,Diana,Chris,Kathy,Alice,Andrew,Martin,Amy");
+    }
+
+    <T> Collector<T, ?, List<T>> toList() {
+        Supplier<List<T>> supplier = ArrayList::new;
+        BiConsumer<List<T>, T> accumulator = List::add;
+        BinaryOperator<List<T>> combiner = (first, second) -> Stream.concat(first.stream(),second.stream()).collect(Collectors.toList());
+        Function<List<T>, List<T>> finisher = UnaryOperator.identity();
+
+        return new SimpleCollector<>(
+                supplier,
+                accumulator,
+                combiner,
+                finisher,
+                Collections.emptySet()
+        );
+    }
+
+    @Test
+    void simplest_To_List_join() {
+        List<Customer> customerList = mall.getCustomers();
+
+        List<String> nameAsCsv = customerList.stream().map(Customer::getName).collect(toList());
+        assertThat(nameAsCsv).containsExactly("Joe","Steven","Patrick","Diana","Chris","Kathy","Alice","Andrew","Martin","Amy");
     }
 
     /**
@@ -81,7 +97,9 @@ class Exercise09 extends OnlineStore {
     /**
      * Create a {@link String} of "n"th bit ON.
      * For example:
+     * "1" will be "1"
      * "3" will be "001"
+     * "5" will be "00001"
      * "1,3,5" will be "10101"
      * "1-3" will be "111"
      * "7,1-3,5" will be "1110101"
